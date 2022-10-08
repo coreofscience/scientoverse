@@ -36,7 +36,8 @@ get_journals <- function(data, reference_df) {
                      by = c("JI_ref" = "journal")) |> 
     dplyr::mutate(JI_ref = if_else(!(is.na(journal_abbr)), 
                                    journal_abbr, 
-                                   JI_ref ))
+                                   JI_ref )) |> 
+    dplyr::select(-journal_abbr)
     # dplyr::filter(!(JI_ref == "")) |> 
     # dplyr::filter(!(JI_main == JI_ref)) 
   
