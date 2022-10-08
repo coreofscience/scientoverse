@@ -10,8 +10,15 @@ get_journals <- function(data, reference_df) {
     dplyr::select(journal, journal_abbr) |>
     dplyr::mutate(journal_abbr = str_remove_all(journal_abbr, "\\.")) |>
     dplyr::mutate(journal_abbr = str_to_upper(journal_abbr)) |> 
+    dplyr::mutate(journal = str_remove_all(journal, "\\.")) |>
+    dplyr::mutate(journal = str_to_upper(journal)) |> 
     dplyr::select(journal, journal_abbr) |> 
-    unique()
+    unique() |> 
+    dplyr::filter(!duplicated(journal_abbr)) |> 
+    tidyr::drop_na() |> 
+    dplyr::mutate(journal = str_replace(string = journal, 
+                                        pattern = " & ", 
+                                        replacement = " AND "))
   
   df_1_journal <- 
     data |> 
@@ -22,11 +29,14 @@ get_journals <- function(data, reference_df) {
                         dplyr::select(SR, 
                                       JI_ref = JI, 
                                       PY_ref = PY)) |> 
-    dplyr::mutate(JI_main = str_remove_all(JI_main, "\\."))
-    # dplyr::inner_join(journals_all_abbr,      
-    #                   by = c("JI_ref" = "journal_abbr")) |>   # We need to improve this part
-    # dplyr::left_join(journals_all_abbr,
-    #                  by = c("JI_ref" = "journal_abbr"))
+    dplyr::mutate(JI_main = str_remove_all(JI_main, "\\.")) |> 
+    # dplyr::inner_join(journals_all_abbr, 
+    #                   by = c("JI_ref" = "journal_abbr")) |> 
+    dplyr::left_join(journals_all_abbr,
+                     by = c("JI_ref" = "journal")) |> 
+    dplyr::mutate(JI_ref = if_else(!(is.na(journal_abbr)), 
+                                   journal_abbr, 
+                                   JI_ref ))
     # dplyr::filter(!(JI_ref == "")) |> 
     # dplyr::filter(!(JI_main == JI_ref)) 
   
