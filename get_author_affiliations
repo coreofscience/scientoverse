@@ -1,0 +1,22 @@
+wos_scopus_AU_CO_C1 <- 
+  wos_scopus_AU_CO |> 
+  select(SR, C1) |> 
+  mutate(
+         # AU_CO_1 = stringr::str_extract_all(C1, ".*;"),
+         # AU_CO_2 = stringr::word(C1, -1), 
+         AU_CO_1 = stringr::str_split(C1, ";") #, simplify = TRUE),
+         # AU_CO_4 = stringr::word(AU_CO_3, -1)
+         ) |> 
+  unnest(AU_CO_1) |> 
+  mutate(
+         #AU_CO_1 = stringr::word(AU_CO_1, -1),
+         AU_CO_1 = stringr::str_extract(AU_CO_1, "\\b[^,]+$"),
+         AU_CO_1 = stringr::str_remove(AU_CO_1, "[[A-Za-z]]"),
+         AU_CO_1 = stringr::str_replace_all(AU_CO_1, "[^[:alnum:]]", "")
+         # AU_CO_1 = gsub("[[:punct:]]", "", AU_CO_1)
+        ) |> 
+  select(-C1) |>
+  tidyr::drop_na() |> 
+  dplyr::group_by(SR) |> 
+  dplyr::mutate(AU_CO_1 = paste0(AU_CO_1, collapse = ";")) |> 
+  dplyr::distinct()
